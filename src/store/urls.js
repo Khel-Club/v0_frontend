@@ -93,4 +93,5 @@ export const endpoints = {
     addPlayers: baseurl + "/player-ops/players",
     updatePlayer: baseurl + "/player-ops/players",
     deletePlayer: baseurl + "/player-ops/players",
+    setMatchOutcome: baseurl + "/matches/{match_id}/outcome",
 };

@@ -297,6 +297,9 @@ const Fixtures = ({
                     } ${!courtManagement && referee ? styles.refereeMode : ''}`}
                     onClick={() => handleMatchClick(match)}
                 >
+                    {match.outcome === 'walkover' && (
+                        <div className={styles.walkoverRibbon}>Walkover</div>
+                    )}
                     <div className={styles.matchId}>
                         Match ID: {match.match_id}
                     </div>
@@ -304,7 +307,12 @@ const Fixtures = ({
                         <div className={`${styles.team} ${
                             match.team1_checked_in === true ? styles.checkedIn : ''
                         }`}>
-                            <div className={styles.teamPlayers}>{match.team1_players}</div>
+                            <div className={styles.teamPlayers}>
+                                {match.team1_players}
+                                {match.outcome === 'walkover' && match.winner_team_id === match.team1_id && (
+                                    <span className={styles.walkoverBadge}>Walkover Win</span>
+                                )}
+                            </div>
                             {match.team1_id && (
                                 <div className={styles.teamId}>Team ID: {match.team1_id}</div>
                             )}
@@ -314,7 +322,12 @@ const Fixtures = ({
                         <div className={`${styles.team} ${
                             match.team2_checked_in === true ? styles.checkedIn : ''
                         }`}>
-                            <div className={styles.teamPlayers}>{match.team2_players}</div>
+                            <div className={styles.teamPlayers}>
+                                {match.team2_players}
+                                {match.outcome === 'walkover' && match.winner_team_id === match.team2_id && (
+                                    <span className={styles.walkoverBadge}>Walkover Win</span>
+                                )}
+                            </div>
                             {match.team2_id && (
                                 <div className={styles.teamId}>Team ID: {match.team2_id}</div>
                             )}
@@ -365,7 +378,12 @@ const Fixtures = ({
                                     <div className={`${styles.team} ${
                                         match.team1_checked_in ? styles.checkedIn : ''
                                     }`}>
-                                        <div className={styles.teamPlayers}>{match.team1_players}</div>
+                                            <div className={styles.teamPlayers}>
+                                                {match.team1_players}
+                                                {match.outcome === 'walkover' && match.winner_team_id === match.team1_id && (
+                                                    <span className={styles.walkoverBadge}>Walkover Win</span>
+                                                )}
+                                            </div>
                                         {match.team1_id && (
                                             <div className={styles.teamId}>Team ID: {match.team1_id}</div>
                                         )}
@@ -375,7 +393,12 @@ const Fixtures = ({
                                     <div className={`${styles.team} ${
                                         match.team2_checked_in ? styles.checkedIn : ''
                                     }`}>
-                                        <div className={styles.teamPlayers}>{match.team2_players}</div>
+                                            <div className={styles.teamPlayers}>
+                                                {match.team2_players}
+                                                {match.outcome === 'walkover' && match.winner_team_id === match.team2_id && (
+                                                    <span className={styles.walkoverBadge}>Walkover Win</span>
+                                                )}
+                                            </div>
                                         {match.team2_id && (
                                             <div className={styles.teamId}>Team ID: {match.team2_id}</div>
                                         )}

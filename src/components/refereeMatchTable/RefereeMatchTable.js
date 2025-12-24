@@ -13,6 +13,9 @@ const RefereeMatchTable = ({ tournamentId }) => {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [scores, setScores] = useState({ team1Score: 0, team2Score: 0 });
   const [modalType, setModalType] = useState('start'); // 'start' or 'completed'
+  const [showWalkoverModal, setShowWalkoverModal] = useState(false);
+  const [walkoverWinner, setWalkoverWinner] = useState(1); // 1 or 2
+  const [walkoverReason, setWalkoverReason] = useState('');
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -221,6 +224,15 @@ const RefereeMatchTable = ({ tournamentId }) => {
                         >
                           Finalize
                         </button>
+                        <button
+                          onClick={() => {
+                            setSelectedMatch(match);
+                            setShowWalkoverModal(true);
+                          }}
+                          className={stl.walkoverButton}
+                        >
+                          Walkover
+                        </button>
                         <button 
                           onClick={() => setEditingMatch(null)}
                           className={stl.cancelButton}
@@ -229,12 +241,23 @@ const RefereeMatchTable = ({ tournamentId }) => {
                         </button>
                       </div>
                     ) : (
-                      <button 
-                        onClick={() => handleEditClick(match)}
-                        className={stl.editButton}
-                      >
-                        Edit Score
-                      </button>
+                      <div style={{display: 'flex', gap: 8}}>
+                        <button 
+                          onClick={() => handleEditClick(match)}
+                          className={stl.editButton}
+                        >
+                          Edit Score
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedMatch(match);
+                            setShowWalkoverModal(true);
+                          }}
+                          className={stl.walkoverButton}
+                        >
+                          Walkover
+                        </button>
+                      </div>
                     )
                   )}
                   {match.match_status.status === 'completed' && (
@@ -296,6 +319,108 @@ const RefereeMatchTable = ({ tournamentId }) => {
               Override Score
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={showWalkoverModal}
+        onClose={() => setShowWalkoverModal(false)}
+      >
+        <DialogTitle>Mark Walkover</DialogTitle>
+        <DialogContent>
+          <p>Please select the winning team for this walkover and optionally provide a reason.</p>
+          <div style={{display: 'flex', gap: 12, marginTop: 8}}>
+            <Button
+              variant={walkoverWinner === 1 ? 'contained' : 'outlined'}
+              onClick={() => setWalkoverWinner(1)}
+            >
+              Team 1
+            </Button>
+            <Button
+              variant={walkoverWinner === 2 ? 'contained' : 'outlined'}
+              onClick={() => setWalkoverWinner(2)}
+            >
+              Team 2
+            </Button>
+          </div>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Reason (optional)"
+            value={walkoverReason}
+            onChange={(e) => setWalkoverReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowWalkoverModal(false)} style={{ color: '#F28C28' }}>Cancel</Button>
+          <Button
+            onClick={async () => {
+              if (!selectedMatch) return;
+              try {
+                // Resolve winner id from a few possible shapes returned by the API
+                const resolveTeamId = (teamField, teamObj) => {
+                  return (
+                    teamField ||
+                    teamObj?.team_id ||
+                    teamObj?.id ||
+                    teamObj?.teamId ||
+                    teamObj?.team ||
+                    null
+                  );
+                };
+
+                const winnerTeamId = walkoverWinner === 1
+                  ? resolveTeamId(selectedMatch.team1_id, selectedMatch.team1)
+                  : resolveTeamId(selectedMatch.team2_id, selectedMatch.team2);
+
+                const requestBody = {
+                  outcome: 'walkover',
+                  // include both keys to be safe for different backend schemas
+                  winner_id: winnerTeamId,
+                  winner_team_id: winnerTeamId,
+                  reason: walkoverReason
+                };
+
+                const url = endpoints.setMatchOutcome.replace('{match_id}', selectedMatch.match_id);
+                console.log(requestBody);
+                const response = await fetch(url, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(requestBody)
+                });
+
+                const resp = await response.json();
+                if (!response.ok) throw new Error(resp.error || 'Failed to set walkover');
+
+                // Update local state optimistically (set both fields)
+                setMatches(matches.map(m => {
+                  if (m.match_id === selectedMatch.match_id) {
+                    return {
+                      ...m,
+                      match_result: `${11}-${0}`,
+                      match_status: { ...m.match_status, status: 'completed', is_final: true, winner_team_id: winnerTeamId },
+                      outcome: 'walkover',
+                      winner_team_id: winnerTeamId,
+                      winner_id: winnerTeamId
+                    };
+                  }
+                  return m;
+                }));
+
+                setShowWalkoverModal(false);
+                setWalkoverReason('');
+                setWalkoverWinner(1);
+                setSelectedMatch(null);
+                toast.success('Match marked as Walkover');
+              } catch (err) {
+                console.error('Walkover error', err);
+                toast.error(err.message || 'Failed to mark walkover');
+              }
+            }}
+            style={{ color: '#4CAF50' }}
+          >
+            Confirm Walkover
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

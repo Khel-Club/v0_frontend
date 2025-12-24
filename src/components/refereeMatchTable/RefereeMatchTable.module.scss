@@ -142,6 +142,15 @@
   }
 }
 
+.walkoverButton {
+  composes: button;
+  background-color: #f28c28;
+  color: white;
+  &:hover {
+    background-color: #e07b1f;
+  }
+}
+
 .cancelButton {
   composes: button;
   background-color: #dc3545;

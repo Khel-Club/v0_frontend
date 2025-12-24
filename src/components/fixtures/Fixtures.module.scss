@@ -149,6 +149,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 1rem;
+  position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
   max-width: 320px;
@@ -345,6 +346,31 @@
       }
     }
   }
+}
+
+.walkoverRibbon {
+  position: absolute;
+  top: 12px;
+  right: -36px;
+  transform: rotate(45deg);
+  background: #F28C28;
+  color: #fff;
+  padding: 6px 48px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+.walkoverBadge {
+  display: inline-block;
+  margin-left: 8px;
+  background: #d9534f;
+  color: white;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  vertical-align: middle;
 }
 
 .loading {

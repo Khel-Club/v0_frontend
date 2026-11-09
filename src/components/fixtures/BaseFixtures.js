@@ -86,6 +86,7 @@ const BaseFixtures = ({
                 ...parseMatchResult(match.match_result),
                 status: match.match_status?.status || 'pending',
                 winner_team_id: match.match_status?.is_final ? match.match_status?.winner_team_id : null,
+                outcome: match.match_status?.outcome,
                 team1_id: match.team1?.team_id,
                 team2_id: match.team2?.team_id,
                 team1_checked_in: match.team1?.checked_in,

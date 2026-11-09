@@ -16,6 +16,7 @@ const MatchScreen = ({ tournamentId, matchId }) => {
     const [scoreData, setScoreData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
+    const [showWalkoverModal, setShowWalkoverModal] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [matchStatus, setMatchStatus] = useState(null);
     const router = useRouter();
@@ -194,6 +195,25 @@ const MatchScreen = ({ tournamentId, matchId }) => {
         }
     };
 
+    const markWalkover = async (winnerTeamId) => {
+        setShowWalkoverModal(false);
+        try {
+            const resp = await apiCall(endpoints.updateMatchOutcome, {
+                method: "POST",
+                body: {
+                    tournament_id: tournamentId,
+                    match_id: matchId,
+                    outcome: "walkover",
+                    winner_team_id: winnerTeamId
+                }
+            });
+            toast.success(resp.message);
+            router.push(`/referee/${tournamentId}/matches`);
+        } catch (error) {
+            toast.error(error.message || "Failed to mark walkover");
+        }
+    };
+
     const handleBackToMatches = () => {
         router.push(`/referee/${tournamentId}/matches`);
     };
@@ -258,8 +278,26 @@ const MatchScreen = ({ tournamentId, matchId }) => {
                 <div className={stl.actions}>
                     <button type="button" onClick={() => updateScore(false)}>Update</button>
                     <button type="button" onClick={finalizeScore}>Final</button>
+                    <button type="button" onClick={() => setShowWalkoverModal(true)}>Walkover</button>
                 </div>
             </form>
+
+            <Dialog open={showWalkoverModal} onClose={() => setShowWalkoverModal(false)}>
+                <DialogTitle>Mark as Walkover</DialogTitle>
+                <DialogContent>
+                    <p>Select the team that showed up. It wins the match.</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowWalkoverModal(false)} style={{ color: '#F28C28' }}>
+                        Cancel
+                    </Button>
+                    {[scoreData.team1, scoreData.team2].map((team) => (
+                        <Button key={team.team_id} onClick={() => markWalkover(team.team_id)} style={{ color: '#4CAF50' }}>
+                            Team {team.team_id} wins
+                        </Button>
+                    ))}
+                </DialogActions>
+            </Dialog>
 
             {isModalOpen && (
                 <div className={stl.modal}>

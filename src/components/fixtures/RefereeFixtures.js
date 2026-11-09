@@ -81,6 +81,7 @@ const RefereeFixtures = ({ tournamentId, totalRounds }) => {
                 </div>
 
                 <div className={styles.matchInfo}>
+                    {match.outcome === 'walkover' && <span className={styles.walkover}>Walkover</span>}
                     <span className={styles.pool}>Pool: {match.pool}</span>
                     <span className={styles.round}>{match.round_name}</span>
                     {match.court_number && (
